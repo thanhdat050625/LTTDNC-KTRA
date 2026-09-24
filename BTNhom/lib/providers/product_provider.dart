@@ -48,7 +48,8 @@ class ProductProvider extends ChangeNotifier {
   Future<void> loadProducts() async {
     _setState(LoadingState.loading);
     try {
-      _products = await _repository.getAll();
+      final fetched = await _repository.getAll();
+      _products = List.from(fetched);
       _applyFilters();
       _setState(LoadingState.success);
     } catch (e) {

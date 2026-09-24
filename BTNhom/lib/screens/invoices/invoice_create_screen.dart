@@ -413,6 +413,8 @@ class _InvoiceCreateScreenState extends State<InvoiceCreateScreen> {
     if (!mounted) return;
 
     if (success && provider.lastSavedInvoice != null) {
+      final savedInvoice = provider.lastSavedInvoice!;
+
       messenger.showSnackBar(
         const SnackBar(
           content: Text('Hóa đơn đã được lưu thành công! 🎉'),
@@ -424,7 +426,7 @@ class _InvoiceCreateScreenState extends State<InvoiceCreateScreen> {
       navigator.push(
         MaterialPageRoute(
           builder: (_) => InvoiceDetailScreen(
-            invoice: provider.lastSavedInvoice!,
+            invoice: savedInvoice,
           ),
         ),
       );
