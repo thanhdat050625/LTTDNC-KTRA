@@ -308,144 +308,211 @@ class InvoiceDetailScreen extends StatelessWidget {
     final pdf = pw.Document();
     final font = await PdfGoogleFonts.robotoRegular();
     final fontBold = await PdfGoogleFonts.robotoBold();
+    final fontItalic = await PdfGoogleFonts.robotoItalic();
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a5,
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.zero,
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Header
-              pw.Center(
+          // Center a receipt-width box on the A4 page
+          return pw.Center(
+            child: pw.Container(
+              width: 390,
+              padding: const pw.EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+              // ── HEADER BOX ──
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.green700,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                ),
                 child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
-                    pw.Text(AppConstants.appFullName,
-                        style: pw.TextStyle(
-                            font: fontBold,
-                            fontSize: 16,
-                            color: PdfColors.green700)),
+                    pw.Text(
+                      AppConstants.appFullName,
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                          font: fontBold, fontSize: 16, color: PdfColors.white),
+                    ),
                     pw.SizedBox(height: 4),
-                    pw.Text('HÓA ĐƠN BÁN HÀNG',
-                        style: pw.TextStyle(
-                            font: fontBold,
-                            fontSize: 14)),
+                    pw.Text(
+                      'HÓA ĐƠN BÁN HÀNG',
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                          font: fontBold, fontSize: 12, color: PdfColors.grey200),
+                    ),
                   ],
                 ),
               ),
               pw.SizedBox(height: 12),
-              pw.Divider(),
-              pw.SizedBox(height: 8),
-              // Info
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                      'Mã HĐ: #${invoice.id.substring(0, 8).toUpperCase()}',
-                      style: pw.TextStyle(font: font, fontSize: 10)),
-                  pw.Text(
-                      'Ngày: ${AppDateUtils.formatDate(invoice.ngayBan)}',
-                      style: pw.TextStyle(font: font, fontSize: 10)),
-                ],
+
+              // ── INFO SECTION ──
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey300),
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                ),
+                child: pw.Column(
+                  children: [
+                    _pdfInfoRow('Mã hóa đơn',
+                        '#${invoice.id.substring(0, 8).toUpperCase()}', font, fontBold),
+                    pw.SizedBox(height: 4),
+                    _pdfInfoRow('Ngày bán',
+                        AppDateUtils.formatDateTime(invoice.ngayBan), font, fontBold),
+                    pw.SizedBox(height: 4),
+                    _pdfInfoRow('Nhân viên', invoice.nhanVien, font, fontBold),
+                  ],
+                ),
               ),
-              pw.SizedBox(height: 4),
-              pw.Text('Nhân viên: ${invoice.nhanVien}',
-                  style: pw.TextStyle(font: font, fontSize: 10)),
               pw.SizedBox(height: 12),
-              pw.Divider(),
-              // Table header
-              pw.Row(
-                children: [
-                  pw.Expanded(
-                      flex: 3,
-                      child: pw.Text('Sản phẩm',
-                          style: pw.TextStyle(font: fontBold, fontSize: 10))),
-                  pw.Expanded(
+
+              // ── TABLE HEADER ──
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                color: PdfColors.grey100,
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                        flex: 4,
+                        child: pw.Text('Sản phẩm',
+                            style: pw.TextStyle(font: fontBold, fontSize: 9))),
+                    pw.SizedBox(
+                      width: 32,
                       child: pw.Text('SL',
                           textAlign: pw.TextAlign.center,
-                          style: pw.TextStyle(font: fontBold, fontSize: 10))),
-                  pw.Expanded(
-                      flex: 2,
-                      child: pw.Text('Thành tiền',
-                          textAlign: pw.TextAlign.right,
-                          style: pw.TextStyle(font: fontBold, fontSize: 10))),
-                ],
+                          style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                    ),
+                    pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('Đơn giá',
+                            textAlign: pw.TextAlign.right,
+                            style: pw.TextStyle(font: fontBold, fontSize: 9))),
+                    pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('Thành tiền',
+                            textAlign: pw.TextAlign.right,
+                            style: pw.TextStyle(font: fontBold, fontSize: 9))),
+                  ],
+                ),
               ),
-              pw.SizedBox(height: 4),
-              pw.Divider(),
-              // Items
-              ...invoice.details.map((d) => pw.Padding(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                    child: pw.Row(
+              pw.Divider(height: 1, color: PdfColors.grey400),
+
+              // ── ITEMS ──
+              ...invoice.details.asMap().entries.map((entry) {
+                final isEven = entry.key.isEven;
+                final d = entry.value;
+                return pw.Container(
+                  color: isEven ? PdfColors.white : PdfColors.grey50,
+                  padding:
+                      const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  child: pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Expanded(
+                          flex: 4,
+                          child: pw.Text(d.tenSanPham,
+                              style: pw.TextStyle(font: font, fontSize: 9))),
+                      pw.SizedBox(
+                        width: 32,
+                        child: pw.Text('${d.soLuong}',
+                            textAlign: pw.TextAlign.center,
+                            style: pw.TextStyle(font: font, fontSize: 9)),
+                      ),
+                      pw.Expanded(
+                          flex: 3,
+                          child: pw.Text(CurrencyUtils.format(d.donGia),
+                              textAlign: pw.TextAlign.right,
+                              style: pw.TextStyle(
+                                  font: font,
+                                  fontSize: 8,
+                                  color: PdfColors.grey600))),
+                      pw.Expanded(
+                          flex: 3,
+                          child: pw.Text(CurrencyUtils.format(d.thanhTien),
+                              textAlign: pw.TextAlign.right,
+                              style: pw.TextStyle(font: fontBold, fontSize: 9))),
+                    ],
+                  ),
+                );
+              }),
+              pw.Divider(height: 1, color: PdfColors.grey400),
+              pw.SizedBox(height: 10),
+
+              // ── TOTALS ──
+              pw.Container(
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey50,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                ),
+                child: pw.Column(
+                  children: [
+                    _pdfSummaryRow('Tạm tính',
+                        CurrencyUtils.format(invoice.tamTinh), font, fontBold),
+                    pw.SizedBox(height: 4),
+                    _pdfSummaryRow(
+                        'VAT (${(AppConstants.vatRate * 100).toInt()}%)',
+                        CurrencyUtils.format(invoice.vat),
+                        font,
+                        fontBold),
+                    if (invoice.hasDiscount) ...[
+                      pw.SizedBox(height: 4),
+                      _pdfSummaryRow(
+                          'Giảm giá (${(AppConstants.discountRate * 100).toInt()}%)',
+                          '- ${CurrencyUtils.format(invoice.giamGia)}',
+                          font,
+                          fontBold),
+                    ],
+                    pw.SizedBox(height: 6),
+                    pw.Divider(color: PdfColors.grey400),
+                    pw.SizedBox(height: 4),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
-                        pw.Expanded(
-                            flex: 3,
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text(d.tenSanPham,
-                                    style: pw.TextStyle(
-                                        font: font, fontSize: 9)),
-                                pw.Text(
-                                    CurrencyUtils.format(d.donGia),
-                                    style: pw.TextStyle(
-                                        font: font,
-                                        fontSize: 8,
-                                        color: PdfColors.grey)),
-                              ],
-                            )),
-                        pw.Expanded(
-                            child: pw.Text('×${d.soLuong}',
-                                textAlign: pw.TextAlign.center,
-                                style: pw.TextStyle(font: font, fontSize: 9))),
-                        pw.Expanded(
-                            flex: 2,
-                            child: pw.Text(
-                                CurrencyUtils.format(d.thanhTien),
-                                textAlign: pw.TextAlign.right,
-                                style: pw.TextStyle(font: fontBold, fontSize: 9))),
+                        pw.Text('TỔNG THANH TOÁN',
+                            style: pw.TextStyle(font: fontBold, fontSize: 11)),
+                        pw.Text(CurrencyUtils.format(invoice.tongTien),
+                            style: pw.TextStyle(
+                                font: fontBold,
+                                fontSize: 13,
+                                color: PdfColors.green700)),
                       ],
                     ),
-                  )),
-              pw.Divider(),
-              pw.SizedBox(height: 8),
-              // Summary
-              _pdfSummaryRow('Tạm tính', CurrencyUtils.format(invoice.tamTinh),
-                  font, fontBold),
-              _pdfSummaryRow(
-                  'VAT (${(AppConstants.vatRate * 100).toInt()}%)',
-                  CurrencyUtils.format(invoice.vat),
-                  font,
-                  fontBold),
-              if (invoice.hasDiscount)
-                _pdfSummaryRow(
-                    'Giảm giá (${(AppConstants.discountRate * 100).toInt()}%)',
-                    '- ${CurrencyUtils.format(invoice.giamGia)}',
-                    font,
-                    fontBold),
-              pw.Divider(),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('TỔNG THANH TOÁN',
-                      style: pw.TextStyle(font: fontBold, fontSize: 12)),
-                  pw.Text(CurrencyUtils.format(invoice.tongTien),
-                      style: pw.TextStyle(
-                          font: fontBold,
-                          fontSize: 14,
-                          color: PdfColors.green700)),
-                ],
+                  ],
+                ),
               ),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 16),
+
+              // ── FOOTER ──
+              pw.Divider(color: PdfColors.grey300),
+              pw.SizedBox(height: 8),
               pw.Center(
-                child: pw.Text('Cảm ơn quý khách!',
+                child: pw.Text('Cảm ơn quý khách đã mua hàng!',
+                    textAlign: pw.TextAlign.center,
                     style: pw.TextStyle(
                         font: fontBold,
-                        fontSize: 12,
+                        fontSize: 11,
                         color: PdfColors.green700)),
               ),
+              pw.SizedBox(height: 4),
+              pw.Center(
+                child: pw.Text('H\u1eb9n g\u1eb7p l\u1ea1i l\u1ea7n sau!',
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(
+                        font: fontItalic,
+                        fontSize: 9,
+                        color: PdfColors.grey600)),
+              ),
             ],
-          );
+          ),
+        ),
+        );
         },
       ),
     );
@@ -453,17 +520,27 @@ class InvoiceDetailScreen extends StatelessWidget {
     return pdf;
   }
 
+  pw.Widget _pdfInfoRow(
+      String label, String value, pw.Font font, pw.Font fontBold) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Text(label,
+            style: pw.TextStyle(font: font, fontSize: 9, color: PdfColors.grey700)),
+        pw.Text(value,
+            style: pw.TextStyle(font: fontBold, fontSize: 9)),
+      ],
+    );
+  }
+
   pw.Widget _pdfSummaryRow(
       String label, String value, pw.Font font, pw.Font fontBold) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 2),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(label, style: pw.TextStyle(font: font, fontSize: 10)),
-          pw.Text(value, style: pw.TextStyle(font: fontBold, fontSize: 10)),
-        ],
-      ),
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Text(label, style: pw.TextStyle(font: font, fontSize: 9)),
+        pw.Text(value, style: pw.TextStyle(font: fontBold, fontSize: 9)),
+      ],
     );
   }
 
