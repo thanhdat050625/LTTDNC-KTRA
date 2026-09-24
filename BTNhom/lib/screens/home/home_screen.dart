@@ -247,6 +247,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   BarChartData(
                     alignment: BarChartAlignment.spaceAround,
                     maxY: maxY * 1.3,
+                    barTouchData: BarTouchData(
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipColor: (_) => AppColors.primary,
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          return BarTooltipItem(
+                            CurrencyUtils.format(rod.toY),
+                            const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     barGroups: points
                         .asMap()
                         .entries

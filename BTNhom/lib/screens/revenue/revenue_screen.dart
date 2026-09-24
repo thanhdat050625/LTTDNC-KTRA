@@ -552,6 +552,7 @@ class _DailyChartCard extends StatelessWidget {
                   ),
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (_) => AppColors.primary,
                       getTooltipItem: (group, _, rod, __) {
                         final day = group.x + 1;
                         return BarTooltipItem(
@@ -702,6 +703,7 @@ class _MonthlyChartCard extends StatelessWidget {
                 ],
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => AppColors.primary,
                     getTooltipItems: (spots) => spots
                         .map((spot) => LineTooltipItem(
                               'T${spot.x.toInt() + 1}\n${CurrencyUtils.format(spot.y)}',
