@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "602993131194",
+    "project_id": "ltddc-12fd2",
+    "storage_bucket": "ltddc-12fd2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602993131194:android:e8abf7f849016078d18c83",
+        "android_client_info": {
+          "package_name": "vn.edu.ute.bai2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4hJoOVjVLsCrIthuF8isUT6h5qsDhp30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
